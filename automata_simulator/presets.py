@@ -1,0 +1,130 @@
+"""
+BENCHMARK PRESETS FOR NORMAL NFA TO DFA SIMULATOR (PYTHON)
+Curated classic academic benchmark automata for powerset subset construction evaluation.
+"""
+
+BENCHMARK_PRESETS = {
+    "contains_11": {
+        "id": "contains_11",
+        "name": "Contains substring '11'",
+        "description": "Standard NFA accepting strings containing '11' over alphabet {0, 1}. Evaluates non-deterministic branch on symbol 1. Converts to 4-state DFA.",
+        "states": ["p0", "p1", "p2"],
+        "alphabet": ["0", "1"],
+        "start_state": "p0",
+        "accept_states": ["p2"],
+        "transitions": {
+            "p0": {"0": ["p0"], "1": ["p0", "p1"]},
+            "p1": {"0": [], "1": ["p2"]},
+            "p2": {"0": ["p2"], "1": ["p2"]},
+        },
+        "sample_strings": [
+            {"text": "11", "expect": True, "note": "Minimal match '11'"},
+            {"text": "0110", "expect": True, "note": "Contains '11' in middle"},
+            {"text": "111", "expect": True, "note": "Overlapping '11'"},
+            {"text": "10101", "expect": False, "note": "Alternating bits without '11'"},
+            {"text": "0000", "expect": False, "note": "Zero occurrences of '1'"},
+        ],
+    },
+    "ends_with_01": {
+        "id": "ends_with_01",
+        "name": "Ends with '01'",
+        "description": "Evaluates non-deterministic branch on symbol 0 over alphabet {0, 1}. Converts 3-state NFA into 3-state DFA.",
+        "states": ["q0", "q1", "q2"],
+        "alphabet": ["0", "1"],
+        "start_state": "q0",
+        "accept_states": ["q2"],
+        "transitions": {
+            "q0": {"0": ["q0", "q1"], "1": ["q0"]},
+            "q1": {"0": [], "1": ["q2"]},
+            "q2": {"0": [], "1": []},
+        },
+        "sample_strings": [
+            {"text": "01", "expect": True, "note": "Minimal accept string"},
+            {"text": "1001", "expect": True, "note": "Ends with 01"},
+            {"text": "1010", "expect": False, "note": "Ends with 10"},
+            {"text": "0000", "expect": False, "note": "Does not end with 1"},
+        ],
+    },
+    "contains_aa": {
+        "id": "contains_aa",
+        "name": "Contains substring 'aa'",
+        "description": "Standard NFA detecting substring 'aa' anywhere within a string over alphabet {a, b}. Converts into a 4-state DFA.",
+        "states": ["q0", "q1", "q2"],
+        "alphabet": ["a", "b"],
+        "start_state": "q0",
+        "accept_states": ["q2"],
+        "transitions": {
+            "q0": {"a": ["q0", "q1"], "b": ["q0"]},
+            "q1": {"a": ["q2"], "b": []},
+            "q2": {"a": ["q2"], "b": ["q2"]},
+        },
+        "sample_strings": [
+            {"text": "aa", "expect": True, "note": "Exact pattern match"},
+            {"text": "baaab", "expect": True, "note": "Contains aa internally"},
+            {"text": "ababa", "expect": False, "note": "Alternating without aa"},
+            {"text": "bbbb", "expect": False, "note": "Zero occurrences of a"},
+        ],
+    },
+    "ends_with_abb": {
+        "id": "ends_with_abb",
+        "name": "Pattern: (a|b)*abb",
+        "description": "Standard compiler lexical token benchmark. Converts into an optimal 4-state DFA.",
+        "states": ["0", "1", "2", "3"],
+        "alphabet": ["a", "b"],
+        "start_state": "0",
+        "accept_states": ["3"],
+        "transitions": {
+            "0": {"a": ["0", "1"], "b": ["0"]},
+            "1": {"a": [], "b": ["2"]},
+            "2": {"a": [], "b": ["3"]},
+            "3": {"a": [], "b": []},
+        },
+        "sample_strings": [
+            {"text": "abb", "expect": True, "note": "Minimal accept"},
+            {"text": "ababb", "expect": True, "note": "Prefix followed by abb"},
+            {"text": "abba", "expect": False, "note": "Ends with a, not b"},
+            {"text": "ab", "expect": False, "note": "Incomplete"},
+        ],
+    },
+    "powerset_explosion": {
+        "id": "powerset_explosion",
+        "name": "Powerset Explosion: 3rd symbol from end is 1",
+        "description": "Demonstrates theoretical powerset growth. Standard 4-state NFA generates 2^3 = 8 reachable DFA states.",
+        "states": ["q0", "q1", "q2", "q3"],
+        "alphabet": ["0", "1"],
+        "start_state": "q0",
+        "accept_states": ["q3"],
+        "transitions": {
+            "q0": {"0": ["q0"], "1": ["q0", "q1"]},
+            "q1": {"0": ["q2"], "1": ["q2"]},
+            "q2": {"0": ["q3"], "1": ["q3"]},
+            "q3": {"0": [], "1": []},
+        },
+        "sample_strings": [
+            {"text": "100", "expect": True, "note": "1 is 3rd from end"},
+            {"text": "111", "expect": True, "note": "1 is 3rd from end"},
+            {"text": "010", "expect": False, "note": "0 is 3rd from end"},
+            {"text": "11", "expect": False, "note": "Length < 3"},
+        ],
+    },
+    "contains_00": {
+        "id": "contains_00",
+        "name": "Contains substring '00'",
+        "description": "NFA over {0, 1} that branches non-deterministically upon encountering the first zero.",
+        "states": ["A", "B", "C"],
+        "alphabet": ["0", "1"],
+        "start_state": "A",
+        "accept_states": ["C"],
+        "transitions": {
+            "A": {"0": ["A", "B"], "1": ["A"]},
+            "B": {"0": ["C"], "1": []},
+            "C": {"0": ["C"], "1": ["C"]},
+        },
+        "sample_strings": [
+            {"text": "00", "expect": True, "note": "Minimal accept"},
+            {"text": "1001", "expect": True, "note": "Contains 00 in middle"},
+            {"text": "01010", "expect": False, "note": "Alternating bits"},
+            {"text": "1111", "expect": False, "note": "Zero 0s"},
+        ],
+    },
+}

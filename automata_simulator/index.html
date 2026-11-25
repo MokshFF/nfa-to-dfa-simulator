@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFA to DFA Conversion Simulator</title>
+    <meta name="description" content="Automata Theory Simulator for Normal NFA to DFA conversion using powerset subset construction, synchronized transition tables, dual vector graphs, and interactive string simulation.">
+    <link rel="stylesheet" href="styles.css?v=3.1">
+    <!-- Google Fonts Inter & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="brand-section">
+            <div class="brand-icon">δ</div>
+            <div class="brand-title">
+                <h1>NFA to DFA Conversion Simulator</h1>
+                <div class="brand-subtitle">Interactive Powerset Construction &amp; String Testing Engine</div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="preset-picker">
+                <label for="preset-select">Automaton Preset:</label>
+                <select id="preset-select" class="preset-select">
+                    <!-- Populated via app.js -->
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-main">
+
+        <!-- LEFT PANEL: Specification, Transition Tables, and Controls -->
+        <section class="left-panel">
+            
+            <!-- NFA Formal Model Definition Card -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>⚙</span> Normal NFA Specification (M_NFA)
+                    </div>
+                    <span class="panel-badge">5-Tuple Model</span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nfa-states">States Q (comma-separated)</label>
+                            <input type="text" id="nfa-states" class="text-input" value="q0, q1, q2" />
+                        </div>
+                        <div class="form-group">
+                            <label for="nfa-alphabet">Alphabet Σ (comma-separated)</label>
+                            <input type="text" id="nfa-alphabet" class="text-input" value="0, 1" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nfa-start">Start State q0</label>
+                            <input type="text" id="nfa-start" class="text-input" value="q0" />
+                        </div>
+                        <div class="form-group">
+                            <label for="nfa-accept">Accept States F (comma-separated)</label>
+                            <input type="text" id="nfa-accept" class="text-input" value="q2" />
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 4px;">
+                        <button id="btn-update-nfa" class="btn btn-secondary btn-sm" style="width: 100%;">
+                            <span>↻ Update Specification</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NFA Transition Matrix Editor Card -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>⊞</span> NFA Transition Matrix δ(q, a)
+                    </div>
+                    <span class="panel-badge">Interactive Editor</span>
+                </div>
+                <div class="panel-body">
+                    <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">
+                        Type target states (e.g. <code>q0, q1</code>) into any cell. Empty or ∅ means no transition. Connected lines update live in the graph.
+                    </p>
+                    <div id="nfa-table-container" class="table-scroll-wrap">
+                        <!-- Populated by app.js -->
+                    </div>
+
+                    <!-- Conversion Triggers -->
+                    <div class="action-row">
+                        <button id="btn-convert-full" class="btn btn-primary">
+                            <span>⚡</span> Convert Full (Instant)
+                        </button>
+                        <button id="btn-convert-step" class="btn btn-step">
+                            <span>▶</span> Step-by-Step Stepper
+                        </button>
+                    </div>
+
+                    <!-- Interactive Stepper Controller (Appears when Step-by-Step is clicked) -->
+                    <div id="stepper-controls" class="stepper-bar" style="display: none;">
+                        <div class="stepper-buttons">
+                            <button id="btn-step-prev" class="btn btn-secondary btn-sm" title="Previous Step">◀ Prev</button>
+                            <button id="btn-step-play" class="btn btn-secondary btn-sm" title="Auto-Play Stepper">▶ Play</button>
+                            <button id="btn-step-next" class="btn btn-secondary btn-sm" title="Next Step">Next ▶</button>
+                            <button id="btn-step-reset" class="btn btn-secondary btn-sm" title="Restart Stepper">↺ Reset</button>
+                            <span id="step-counter-text" class="panel-badge">Step 0 / 0</span>
+                        </div>
+
+                        <div class="stepper-progress">
+                            <div id="step-progress-bar" class="progress-fill"></div>
+                        </div>
+
+                        <div class="stepper-speed">
+                            <span>Speed:</span>
+                            <input type="range" id="step-speed" min="200" max="1400" value="700" />
+                        </div>
+
+                        <div id="step-log-box" class="step-log-box">
+                            <div class="log-item info">
+                                <span class="log-title">Ready</span>
+                                <p>Click Next to advance the powerset construction step-by-step.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated DFA Transition Table Card -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>✓</span> Generated DFA Transition Table (Subset Construction)
+                    </div>
+                    <span id="dfa-stats-badge" class="panel-badge">Pending</span>
+                </div>
+                <div class="panel-body">
+                    <div id="dfa-table-container" class="table-scroll-wrap">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: Visual Graph Viewports & Interactive String Tester -->
+        <section class="viewport-area">
+
+            <!-- Dual Graph Diagrams -->
+            <div class="dual-graph-grid">
+                
+                <!-- Source NFA Graph View -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <div class="graph-card-title">
+                            <span style="color: var(--cyan);">●</span> Source NFA Graph (NFA)
+                        </div>
+                        <div class="graph-controls">
+                            <button id="btn-zoom-in-nfa" class="btn btn-secondary btn-sm" title="Zoom In">+</button>
+                            <button id="btn-zoom-out-nfa" class="btn btn-secondary btn-sm" title="Zoom Out">-</button>
+                            <button id="btn-reset-nfa-view" class="btn btn-secondary btn-sm" title="Reset View">Fit</button>
+                        </div>
+                    </div>
+                    <div id="nfa-graph-container" class="graph-canvas-container">
+                        <!-- SVG injected by renderer.js -->
+                    </div>
+                </div>
+
+                <!-- Generated DFA Graph View -->
+                <div class="graph-card">
+                    <div class="graph-card-header">
+                        <div class="graph-card-title">
+                            <span style="color: var(--violet);">●</span> Generated DFA Graph (DFA)
+                        </div>
+                        <div class="graph-controls">
+                            <button id="btn-zoom-in-dfa" class="btn btn-secondary btn-sm" title="Zoom In">+</button>
+                            <button id="btn-zoom-out-dfa" class="btn btn-secondary btn-sm" title="Zoom Out">-</button>
+                            <button id="btn-reset-dfa-view" class="btn btn-secondary btn-sm" title="Reset View">Fit</button>
+                        </div>
+                    </div>
+                    <div id="dfa-graph-container" class="graph-canvas-container">
+                        <!-- SVG injected by renderer.js -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- String Testing Workbench Card -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>►</span> Interactive String Testing Workbench
+                    </div>
+                    <span class="panel-badge">Verification Engine</span>
+                </div>
+                <div class="panel-body">
+                    
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="test-string-input" class="text-input" style="flex: 1; min-width: 150px;" placeholder="Enter string over alphabet (e.g., 0110)" value="0110" />
+                        <button id="btn-run-string" class="btn btn-primary">
+                            <span>▶ Run String</span>
+                        </button>
+                        <button id="btn-step-string" class="btn btn-secondary">
+                            <span>Step ❯</span>
+                        </button>
+                        <button id="btn-add-to-batch" class="btn btn-secondary btn-sm" title="Add this string into the batch test suite below">
+                            <span>+ Add to Suite</span>
+                        </button>
+                        <button id="btn-reset-string" class="btn btn-secondary btn-sm" title="Clear string trace">
+                            <span>Clear</span>
+                        </button>
+                    </div>
+
+                    <!-- Visual Tape Head -->
+                    <div id="tape-container" class="tape-display">
+                        <!-- Rendered by app.js -->
+                    </div>
+
+                    <!-- Live Log & Verdict -->
+                    <div id="string-log" style="font-family: var(--font-mono); font-size: 0.8rem; margin: 8px 0;">
+                        <span class="text-muted">Enter string and click Run to observe step-by-step state transitions.</span>
+                    </div>
+
+                    <div id="string-verdict-banner" class="verdict-banner hidden">
+                        <!-- Verdict banner injected by app.js -->
+                    </div>
+
+                    <!-- Benchmark Batch Test Cases -->
+                    <div style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="batch-suite-title" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+                                Preset Benchmark Test Suite
+                            </span>
+                            <span id="batch-suite-count" class="panel-badge">5 Test Cases</span>
+                        </div>
+                        <div id="batch-tests-container">
+                            <!-- Populated by app.js -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div>
+            NFA to DFA Conversion Simulator • Powerset Subset Construction Engine
+        </div>
+        <div>
+            Deterministic Finite Automaton Conversion &amp; String Simulation
+        </div>
+    </footer>
+
+    <!-- Scripts: SVG Renderer and API UI Coordinator -->
+    <script src="js/renderer.js?v=3.1"></script>
+    <script src="js/app.js?v=3.1"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# Exclude PDFs
+*.pdf
+**/*.pdf
+
+# Exclude milestone and college evaluation files
+*Milestone*
+*milestone*
+*M1*
+*M2*
+generate_m2_pdf.py
+
+# Exclude presentation and binary office files
+*.pptx
+*.ppt
+*.docx
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+**/*.pyc
+**/*.pyo
+
+# Editor and environment
+.vscode/
+.idea/
+.env
+venv/
+env/
+
+# System files
+Thumbs.db
+.DS_Store
